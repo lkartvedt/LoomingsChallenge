@@ -1,10 +1,13 @@
 package com.lkartvedt.sada.loomings;
 
+import com.google.common.hash.Hashing;
 import io.minio.*;
 import io.minio.errors.MinioException;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 
 // Code sourced from https://docs.min.io/docs/java-client-quickstart-guide.html
 public class Loomings {
@@ -16,6 +19,7 @@ public class Loomings {
                     MinioClient.builder()
                             .endpoint("https://play.min.io")
                             .credentials("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+//                            .credentials("lkartvedt", "zoomieS141523!")
                             .build();
 
             String bucketName = "loomings";
@@ -48,12 +52,20 @@ public class Loomings {
                     lineCount++;
                     String lineFileName = "File-" + String.valueOf(lineCount);
                     InputStream inputStream = new ByteArrayInputStream(lineString.getBytes());
+                    // Create hash and metadata
+                    // Using the Guava Library for the SHA-254 Hash function
+                    String contentSha256Hash = Hashing.sha256()
+                            .hashString(lineString, StandardCharsets.UTF_8)
+                            .toString();
+                    HashMap<String, String> userMetadata = new HashMap<>();
+                    userMetadata.put("Content-hash", contentSha256Hash);
                     // Build and upload object to bucket
                     minioClient.putObject(
                             PutObjectArgs.builder()
                                     .bucket(bucketName)
                                     .object(lineFileName)
                                     .stream(inputStream, lineString.length(), -1)
+                                    .userMetadata(userMetadata)
                                     .contentType("text/plain")
                                     .build());
                 }
