@@ -1,19 +1,16 @@
 package com.lkartvedt.sada.loomings;
 
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
-import io.minio.UploadObjectArgs;
+import io.minio.*;
 import io.minio.errors.MinioException;
-import java.io.IOException;
+import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 // Code sourced from https://docs.min.io/docs/java-client-quickstart-guide.html
 public class Loomings {
+
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeyException {
         try {
-
             // Create a minioClient with the MinIO server playground, access key, and secret key
             MinioClient minioClient =
                     MinioClient.builder()
@@ -22,7 +19,7 @@ public class Loomings {
                             .build();
 
             String bucketName = "loomings";
-            String objectName = "LoomingsTextFile";
+            String objectName = "Loomings";
             String fileName = "./loomings.txt";
 
             // Make bucket if it doesn't exist
@@ -33,7 +30,6 @@ public class Loomings {
             } else {
                 System.out.printf("Bucket '%s' already exists.\n", bucketName);
             }
-
             // Upload file as a named object to the bucket
             minioClient.uploadObject(
                     UploadObjectArgs.builder()
@@ -41,9 +37,9 @@ public class Loomings {
                             .object(objectName)
                             .filename(fileName)
                             .build());
-            System.out.printf("'%s' is successfully uploaded as object '%s' to bucket '%s'.\n", fileName, objectName, bucketName);
+            System.out.printf("'%s' was successfully uploaded as object '%s' to bucket '%s'.\n", fileName, objectName, bucketName);
 
-        } catch (MinioException e) {
+        } catch (MinioException e) { //try catch block for MinIO exception because I actually want to see the error messages
             System.out.println("Error occurred: " + e);
             System.out.println("HTTP trace: " + e.httpTrace());
         }
