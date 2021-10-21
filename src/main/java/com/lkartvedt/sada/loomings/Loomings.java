@@ -39,6 +39,34 @@ public class Loomings {
                             .build());
             System.out.printf("'%s' was successfully uploaded as object '%s' to bucket '%s'.\n", fileName, objectName, bucketName);
 
+            //Loop through file. If line is not empty, increase line count, put it in a text file, add the textfile to the bucket
+            int lineCount = 0;
+            LineNumberReader lineNumberReader = new LineNumberReader(new FileReader(fileName));
+            String lineString;
+            while((lineString = lineNumberReader.readLine()) != null){
+                if(!lineString.isEmpty()) {
+                    lineCount++;
+                    String lineFileName = "File-" + String.valueOf(lineCount);
+                    InputStream inputStream = new ByteArrayInputStream(lineString.getBytes());
+                    // Build and upload object to bucket
+                    minioClient.putObject(
+                            PutObjectArgs.builder()
+                                    .bucket(bucketName)
+                                    .object(lineFileName)
+                                    .stream(inputStream, lineString.length(), -1)
+                                    .contentType("text/plain")
+                                    .build());
+                }
+            }
+            System.out.printf("Line files from '%s' were successfully uploaded with unique names to bucket '%s'.\n", fileName, bucketName);
+            lineNumberReader.close();
+
+            if (lineCount == 1) {
+                System.out.printf("There is %d line in '%s'.\n", lineCount, fileName);
+            } else {
+                System.out.printf("There are %d total lines in '%s'.\n", lineCount, fileName);
+            }
+
         } catch (MinioException e) { //try catch block for MinIO exception because I actually want to see the error messages
             System.out.println("Error occurred: " + e);
             System.out.println("HTTP trace: " + e.httpTrace());
